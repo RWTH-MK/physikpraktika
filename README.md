@@ -17,7 +17,7 @@ Datei in das Verzeichnis legen, in dem auch die Auswertung stattfindet und
 ### Einbinden mit Git
 Wer Git beherrscht, kann dieses Repo als [Submodul](https://github.blog/2016-02-01-working-with-submodules/)
 verwenden. Dazu im eigenen Repo für die Auswertung ``git submodule add https://github.com/RWTH-MK/physikpraktika.git`` 
-ausführen und bei einem Update des Repos ``git submodule update`` nutzen.
+ausführen und bei einem Update des Repos ``git submodule update --recursive --remote`` nutzen.
 
 ## Einsatz
 Es empfiehlt es sich beim Arbeiten einen kürzeren Namespace zu wählen, z. B. `import physikpraktika as fp`. 
