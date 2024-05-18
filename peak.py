@@ -33,14 +33,14 @@ def peak_index(daten, erwartete_peak_zahl):
             prominenz -= 0.5
             peak_indizes = find_peaks(daten, prominence=prominenz)
 
-    return peak_indizes
+    return peak_indizes[0]
 
 
 def _gauss(x, a, x0, sigma):
     return a * np.exp(-(x - x0)**2 / (2 * sigma**2))
 
 
-def peak_gaus(x_wert, y_wert, plot: PlotParameter = None):
+def peak_gauss(x_wert, y_wert, plot: PlotParameter = None):
     """
 
     Parameters
