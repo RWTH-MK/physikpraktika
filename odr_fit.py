@@ -1,10 +1,12 @@
+import matplotlib.pyplot as plt
 import numpy as np
 from uncertainties import ufloat
 from uncertainties import unumpy as unp
 from scipy.odr import ODR, Model, RealData
+from __init__ import PlotParameter
 
 
-def odr_fit(gleichung, x_uarray, y_uarray, guess):
+def odr_fit(gleichung, x_uarray, y_uarray, guess, plot: PlotParameter = None):
     """Nimmt einen scipy.odr Fit vor an Daten im uarray-Format.
     Sollte ein Problem auftreten, die uarrays als [x_uarray] und [y_uarray] übergeben
 
@@ -19,6 +21,8 @@ def odr_fit(gleichung, x_uarray, y_uarray, guess):
         Ggf. als [y_uarray] in den Funktionsaufruf schreiben
     guess : [float]
         Liste der Schätz-Paramter
+    plot : PlotParameter
+        Optional. Falls die Daten & Fit mit Fehlerhülle geplottet werden soll; Beachte die Hinweise der Klasse.
 
     Returns
     -------
@@ -33,7 +37,25 @@ def odr_fit(gleichung, x_uarray, y_uarray, guess):
     fit_modell = Model(gleichung)
     daten = RealData(x=x_wert, sx=x_fehler, y=y_wert, sy=y_fehler)
     collage = ODR(daten, fit_modell, beta0=guess)
-    return collage.run()
+    fit_ergebnis = collage.run()
+
+    if plot:
+        x_plot = x_wert*plot.x_faktor
+        y_fit = gleichung(fit_ergebnis.beta, x_wert)*plot.y_faktor
+        err_fit = fit_ergebnis.sd_beta[0]*plot.y_faktor
+        plt.errorbar(x_plot, y_wert*plot.y_faktor,
+                     xerr=x_fehler*plot.x_faktor, yerr=y_fehler*plot.y_faktor,
+                     color='gray', linestyle='None', marker='None')
+        plt.plot(x_plot, y_fit, color='orange', linestyle="--")
+        plt.fill_between(x_plot, y_fit - err_fit, y_fit + err_fit, color='orange', alpha=0.2)
+        plt.xlabel(plot.x_achse)
+        plt.ylabel(plot.y_achse)
+        plt.title(plot.titel)
+        plt.savefig(plot.datei)
+        plt.show()
+        plt.close()
+
+    return
 
 
 def fit_to_uarray(fit_para):
