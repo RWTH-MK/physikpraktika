@@ -3,7 +3,7 @@ import numpy as np
 from uncertainties import ufloat
 from uncertainties import unumpy as unp
 from scipy.odr import ODR, Model, RealData
-from .__init__ import PlotParameter
+from ._plotten import PlotParameter
 
 
 def odr_fit(gleichung, x_uarray, y_uarray, guess, plot: PlotParameter = None):
