@@ -55,7 +55,7 @@ def odr_fit(gleichung, x_uarray, y_uarray, guess, plot: PlotParameter = None):
         plt.show()
         plt.close()
 
-    return
+    return fit_ergebnis
 
 
 def fit_to_uarray(fit_para):
