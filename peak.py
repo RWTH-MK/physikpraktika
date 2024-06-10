@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 from scipy.optimize import curve_fit
 from uncertainties import unumpy as unp
-from __init__ import PlotParameter
+from ._plotten import PlotParameter
 
 
 def peak_index(daten, erwartete_peak_zahl):

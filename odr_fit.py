@@ -3,7 +3,7 @@ import numpy as np
 from uncertainties import ufloat
 from uncertainties import unumpy as unp
 from scipy.odr import ODR, Model, RealData
-from __init__ import PlotParameter
+from ._plotten import PlotParameter
 
 
 def odr_fit(gleichung, x_uarray, y_uarray, guess, plot: PlotParameter = None):
@@ -55,7 +55,7 @@ def odr_fit(gleichung, x_uarray, y_uarray, guess, plot: PlotParameter = None):
         plt.show()
         plt.close()
 
-    return
+    return fit_ergebnis
 
 
 def fit_to_uarray(fit_para):
@@ -69,7 +69,7 @@ def fit_to_uarray(fit_para):
     uarray
         Die Fitparameter mit ihren Fehlern
     """
-    schleife = len(fit_para)
+    schleife = len(fit_para.beta)
     ergebnis = unp.uarray(np.zeros(schleife), np.zeros(schleife))
     for i in range(schleife):
         ergebnis[i] = ufloat(fit_para.beta[i], fit_para.sd_beta[i])
