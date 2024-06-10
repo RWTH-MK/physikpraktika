@@ -69,7 +69,7 @@ def fit_to_uarray(fit_para):
     uarray
         Die Fitparameter mit ihren Fehlern
     """
-    schleife = len(fit_para)
+    schleife = len(fit_para.beta)
     ergebnis = unp.uarray(np.zeros(schleife), np.zeros(schleife))
     for i in range(schleife):
         ergebnis[i] = ufloat(fit_para.beta[i], fit_para.sd_beta[i])
