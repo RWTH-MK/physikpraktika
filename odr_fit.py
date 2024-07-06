@@ -40,14 +40,40 @@ def odr_fit(gleichung, x_uarray, y_uarray, guess, plot: PlotParameter = None):
     fit_ergebnis = collage.run()
 
     if plot:
-        x_plot = x_wert*plot.x_faktor
-        y_fit = gleichung(fit_ergebnis.beta, x_wert)*plot.y_faktor
+        ''' DIESER VERSUCH IST ÜBERKOMPLEX --- ENTFERNEN SOBALD DIE NACHSTEHENDE LÖSUNG ALS ROBUST GELTEN KANN
+        # Der Fit soll glatt sein und über die x-Randwerte der Messung hinauslaufen, darum werden
+        # extra x-Werte aufgebaut. Leider ist diese Aufgabe -- so vermute ich -- nicht trivial allgemein lösbar.
+        # Beachte weiter unten limit/plt.xlim, damit der Graph weiterhin um die Messung bleibt.
+        # Der optimale "Verlängerungs"-Parameter wurde womöglich noch nicht entdeckt:
+        proto_grenzenlos = 7
+        # Zähle jetzt noch die Vorkomma-Ziffern bzw. Nachkomma-Ziffern auf Basis des Mittelwerts
+        x_mitt = np.mean(x_wert)
+        if x_mitt > 1:
+            proto_grenzenlos *= float(str(x_mitt).find('.'))
+        elif x_mitt < 1:
+            x_min, x_slice = len(str(x_mitt)), str(x_mitt)[2::]
+            for i in range(1, 10):
+                lauf = float(x_slice.find(str(i)))
+                if 0 < lauf < x_min: x_min = lauf
+            proto_grenzenlos /= 10**x_min
+        grenzenlos = proto_grenzenlos if plot.x_faktor==1 else proto_grenzenlos/10/plot.x_faktor
+        x_fit = np.linspace(min(x_wert)-grenzenlos, max(x_wert)+grenzenlos, 100)*plot.x_faktor
+        '''
+        # Der Fit soll über die x-Randwerte der Messung hinauslaufen, darum werden extra x-Werte aufgebaut. Beachte auch plt.xlim
+        # Zusätzlich werden mehr Punkte mit np.linspace erstellt, um eine glatte Fitfunktion darzustellen.
+        limit = 1.1 * max(x_fehler)
+        x_fit = np.linspace(min(x_wert)-limit, max(x_wert)+limit, 100)*plot.x_faktor
+        y_fit = gleichung(fit_ergebnis.beta, x_fit)*plot.y_faktor
         err_fit = fit_ergebnis.sd_beta[0]*plot.y_faktor
+        
+        limit *= plot.x_faktor
+        x_plot = x_wert*plot.x_faktor
         plt.errorbar(x_plot, y_wert*plot.y_faktor,
                      xerr=x_fehler*plot.x_faktor, yerr=y_fehler*plot.y_faktor,
                      color='gray', linestyle='None', marker='None')
-        plt.plot(x_plot, y_fit, color='orange', linestyle="--")
-        plt.fill_between(x_plot, y_fit - err_fit, y_fit + err_fit, color='orange', alpha=0.2)
+        plt.plot(x_fit, y_fit, color='orange', linestyle="--")
+        plt.fill_between(x_fit, y_fit - err_fit, y_fit + err_fit, color='orange', alpha=0.2)
+        plt.xlim(min(x_plot)-limit, max(x_plot)+limit)
         plt.xlabel(plot.x_achse)
         plt.ylabel(plot.y_achse)
         plt.title(plot.titel)
@@ -58,19 +84,25 @@ def odr_fit(gleichung, x_uarray, y_uarray, guess, plot: PlotParameter = None):
     return fit_ergebnis
 
 
-def fit_to_uarray(fit_para):
+def fit_to_uarray(fit_ergebnis, print_complete_ODR_result = False):
     """
     Parameters
     ----------
     fit_para : odr_fit.return
-        Der Rückgabewert des scipy ODR-Fit Laufs
+        Der Rückgabetyp des scipy ODR-Fit Laufs
+    print_complete_ODR_result : bool
+        Nutzt die pprint Funktion aus scipy, die alle Ergebnisse des Fits ausgibt inkl. Kovarianzmatrix etc.
+        Übersichtlicher kann man die Ergebnisse haben, wenn man den auf return dieser Funktion print() nutzt
     Returns
     -------
     uarray
-        Die Fitparameter mit ihren Fehlern
+        Die Fitparameter mit ihren Fehlern als uncertainty-Dateityp
     """
-    schleife = len(fit_para.beta)
+    if print_complete_ODR_result: fit_ergebnis.pprint()
+
+    # Der auskommentierte ternäre Operator diente einer Bug-Suche und könnte nochmal nützlich sein
+    schleife = len(fit_ergebnis.beta)  # if isinstance(fit_ergebnis.beta, list) else 1
     ergebnis = unp.uarray(np.zeros(schleife), np.zeros(schleife))
     for i in range(schleife):
-        ergebnis[i] = ufloat(fit_para.beta[i], fit_para.sd_beta[i])
+        ergebnis[i] = ufloat(fit_ergebnis.beta[i], fit_ergebnis.sd_beta[i])
     return ergebnis
