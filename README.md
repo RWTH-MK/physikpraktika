@@ -21,7 +21,7 @@ ausführen und bei einem Update des Repos ``git submodule update --recursive --r
 
 ## Einsatz
 Es empfiehlt es sich beim Arbeiten einen kürzeren Namespace zu wählen, z. B. `import physikpraktika as fp`. 
-Bitte auf keinen Fall `as *` importieren, die Naturkonstanten sind leicht zu überschreiben.
+Bitte auf keinen Fall `from physikpraktika import *` importieren, da die Naturkonstanten leicht zu überschreiben sind.
 Alle Befehle sind ausgiebig kommentiert und hoffentlich namentlich eindeutig. 
 
 Eine beispielhafte Auswertung ist im zugehörigen [Repository](https://github.com/RWTH-MK/physikpraktika_beispiel_Rutherford) verfügbar.
