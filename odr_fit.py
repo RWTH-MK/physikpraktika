@@ -6,9 +6,8 @@ from scipy.odr import ODR, Model, RealData
 from ._plotten import PlotParameter
 
 
-def odr_fit(gleichung, x_uarray, y_uarray, guess, plot: PlotParameter = None):
-    """Nimmt einen scipy.odr Fit vor an Daten im uarray-Format.
-    Sollte ein Problem auftreten, die uarrays als [x_uarray] und [y_uarray] übergeben
+def odr_fit(gleichung, x_uarray: numpy.ndarray, y_uarray: numpy.ndarray, guess, plot: PlotParameter = None):
+    """Nimmt einen scipy.odr Fit vor an Daten im uarray-Format. Optional kann ein Plot mit Fehlerhülle erstellt werden.
 
     Parameters
     ----------
@@ -16,11 +15,11 @@ def odr_fit(gleichung, x_uarray, y_uarray, guess, plot: PlotParameter = None):
         Diese Funktion muss gemäß scipy Doku aufgebaut sein: https://docs.scipy.org/doc/scipy/reference/odr.html
         (Basic Usage, Punkt 1). Hinweis: Kann als lambda-Funktion übergeben werden
     x_uarray : uarray
-        Ggf. als [x_uarray] in den Funktionsaufruf schreiben
+        Ggf. als [x_uarray] oder *x_uarray in den Funktionsaufruf schreiben
     y_uarray : uarray
-        Ggf. als [y_uarray] in den Funktionsaufruf schreiben
+        Ggf. als [y_uarray] oder *y_uarray in den Funktionsaufruf schreiben
     guess : [float]
-        Liste der Schätz-Paramter
+        Liste der Schätz-Paramter für die Funktion
     plot : PlotParameter
         Optional. Falls die Daten & Fit mit Fehlerhülle geplottet werden soll; Beachte die Hinweise der Klasse.
 
@@ -30,49 +29,33 @@ def odr_fit(gleichung, x_uarray, y_uarray, guess, plot: PlotParameter = None):
         ein komplexer Datentyp. Nützlich allerdings zur graphischen Darstellung: Recycle die Funktion für <gleichung>:
         plt.plot(unp.nominal_values(x_uarray), <gleichung>(fit.beta, unp.nominal_values(x_uarray)))
     """
-
-    x_wert, x_fehler = *unp.nominal_values(x_uarray), *unp.std_devs(x_uarray)
-    y_wert, y_fehler = *unp.nominal_values(y_uarray), *unp.std_devs(y_uarray)
-
+    x_wert, x_fehler = unp.nominal_values(x_uarray), unp.std_devs(x_uarray)
+    y_wert, y_fehler = unp.nominal_values(y_uarray), unp.std_devs(y_uarray)
+    
     fit_modell = Model(gleichung)
     daten = RealData(x=x_wert, sx=x_fehler, y=y_wert, sy=y_fehler)
     collage = ODR(daten, fit_modell, beta0=guess)
     fit_ergebnis = collage.run()
 
     if plot:
-        ''' DIESER VERSUCH IST ÜBERKOMPLEX --- ENTFERNEN SOBALD DIE NACHSTEHENDE LÖSUNG ALS ROBUST GELTEN KANN
-        # Der Fit soll glatt sein und über die x-Randwerte der Messung hinauslaufen, darum werden
-        # extra x-Werte aufgebaut. Leider ist diese Aufgabe -- so vermute ich -- nicht trivial allgemein lösbar.
-        # Beachte weiter unten limit/plt.xlim, damit der Graph weiterhin um die Messung bleibt.
-        # Der optimale "Verlängerungs"-Parameter wurde womöglich noch nicht entdeckt:
-        proto_grenzenlos = 7
-        # Zähle jetzt noch die Vorkomma-Ziffern bzw. Nachkomma-Ziffern auf Basis des Mittelwerts
-        x_mitt = np.mean(x_wert)
-        if x_mitt > 1:
-            proto_grenzenlos *= float(str(x_mitt).find('.'))
-        elif x_mitt < 1:
-            x_min, x_slice = len(str(x_mitt)), str(x_mitt)[2::]
-            for i in range(1, 10):
-                lauf = float(x_slice.find(str(i)))
-                if 0 < lauf < x_min: x_min = lauf
-            proto_grenzenlos /= 10**x_min
-        grenzenlos = proto_grenzenlos if plot.x_faktor==1 else proto_grenzenlos/10/plot.x_faktor
-        x_fit = np.linspace(min(x_wert)-grenzenlos, max(x_wert)+grenzenlos, 100)*plot.x_faktor
-        '''
-        # Der Fit soll über die x-Randwerte der Messung hinauslaufen, darum werden extra x-Werte aufgebaut. Beachte auch plt.xlim
+        # Der Fit soll über die x-Randwerte der Messung hinauslaufen, darum werden extra x-Werte aufgebaut.
         # Zusätzlich werden mehr Punkte mit np.linspace erstellt, um eine glatte Fitfunktion darzustellen.
         limit = 1.1 * max(x_fehler)
         x_fit = np.linspace(min(x_wert)-limit, max(x_wert)+limit, 100)*plot.x_faktor
         y_fit = gleichung(fit_ergebnis.beta, x_fit)*plot.y_faktor
-        err_fit = fit_ergebnis.sd_beta[0]*plot.y_faktor
-        
+        # Aufbau der Fehlerhülle
+        fit_para_unten = fit_ergebnis.beta - fit_ergebnis.sd_beta
+        fit_para_oben = fit_ergebnis.beta + fit_ergebnis.sd_beta
+        untere_huelle = gleichung(fit_para_unten, x_fit)*plot.y_faktor
+        obere_huelle = gleichung(fit_para_oben, x_fit)*plot.y_faktor
+
         limit *= plot.x_faktor
         x_plot = x_wert*plot.x_faktor
         plt.errorbar(x_plot, y_wert*plot.y_faktor,
                      xerr=x_fehler*plot.x_faktor, yerr=y_fehler*plot.y_faktor,
                      color='gray', linestyle='None', marker='None')
         plt.plot(x_fit, y_fit, color='orange', linestyle="--")
-        plt.fill_between(x_fit, y_fit - err_fit, y_fit + err_fit, color='orange', alpha=0.2)
+        plt.fill_between(x_fit, untere_huelle, obere_huelle, color='orange', alpha=0.21)
         plt.xlim(min(x_plot)-limit, max(x_plot)+limit)
         plt.xlabel(plot.x_achse)
         plt.ylabel(plot.y_achse)
