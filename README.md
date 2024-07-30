@@ -21,22 +21,9 @@ ausführen und bei einem Update des Repos ``git submodule update --recursive --r
 
 ## Einsatz
 Es empfiehlt es sich beim Arbeiten einen kürzeren Namespace zu wählen, z. B. `import physikpraktika as fp`. 
-Bitte auf keinen Fall `as *` importieren, die Naturkonstanten sind leicht zu überschreiben.
+Bitte auf keinen Fall `from physikpraktika import *` importieren, da die Naturkonstanten leicht zu überschreiben sind.
 Alle Befehle sind ausgiebig kommentiert und hoffentlich namentlich eindeutig. 
 
-Ein Beispiel: Wir haben eine Reihe von Interferenzfiltern, die mangels Herstellerangabe zu 1% Fehler angenommen werden. Dazu 
-folgender Code mit den nötigen Imports und unseren Filterdaten:
-```python
-from uncertainties import unumpy
-import physikpraktika as fp
-
-interferenzfilter = [420, 690, 1313]  # nm
-```
-Jetzt kann 
-```python
-filter = fp.relativer_fehler(interferenzfilter, 1)
-```
-genutzt werden, um direkt ein uarray (Array von ufloats) zu erzeugen. Um alle Funktionen kennenzulernen am besten kurz
-in die Dateien schauen, die sind wirklich überschaubar.
+Eine beispielhafte Auswertung ist im zugehörigen [Repository](https://github.com/RWTH-MK/physikpraktika_beispiel_Rutherford) verfügbar.
 
 Bei Fragen und Problemen bitte ein Issue eröffnen oder auf kurzem Dienstweg melden ;) 

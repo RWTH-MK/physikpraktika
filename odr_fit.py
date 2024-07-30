@@ -82,9 +82,8 @@ def fit_to_uarray(fit_ergebnis, print_complete_ODR_result = False):
         Die Fitparameter mit ihren Fehlern als uncertainty-Dateityp
     """
     if print_complete_ODR_result: fit_ergebnis.pprint()
-
-    # Der auskommentierte ternäre Operator diente einer Bug-Suche und könnte nochmal nützlich sein
-    schleife = len(fit_ergebnis.beta)  # if isinstance(fit_ergebnis.beta, list) else 1
+        
+    schleife = len(fit_ergebnis.beta)
     ergebnis = unp.uarray(np.zeros(schleife), np.zeros(schleife))
     for i in range(schleife):
         ergebnis[i] = ufloat(fit_ergebnis.beta[i], fit_ergebnis.sd_beta[i])
