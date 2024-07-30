@@ -6,7 +6,7 @@ from scipy.odr import ODR, Model, RealData
 from ._plotten import PlotParameter
 
 
-def odr_fit(gleichung, x_uarray: numpy.ndarray, y_uarray: numpy.ndarray, guess, plot: PlotParameter = None):
+def odr_fit(gleichung, x_uarray: np.ndarray, y_uarray: np.ndarray, guess, plot: PlotParameter = None):
     """Nimmt einen scipy.odr Fit vor an Daten im uarray-Format. Optional kann ein Plot mit Fehlerhülle erstellt werden.
 
     Parameters
