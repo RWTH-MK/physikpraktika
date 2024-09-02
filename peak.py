@@ -74,12 +74,14 @@ def peak_gauss(x_wert, y_wert, plot: PlotParameter = None):
         x_plot = x_wert * plot.x_faktor
         y_fit = _gauss(x_wert, *popt) * plot.y_faktor
         plt.plot(x_plot, y_wert * plot.y_faktor, color='gray', linestyle='None', marker='.')
-        plt.plot(x_plot, y_fit, color='orange', linestyle="--")
+        plt.plot(x_plot, y_fit, color='orange', linestyle="--", label=r'$a={}$ $\mu={}$ $\sigma={}$'.format(*ergebnis))
+        # Folgendes Label nutzt ein sauberes +- Symbol, beherrscht aber keine Darstellung mit signifikanten Stellen
+        # plt.plot(x_plot, y_fit, color='orange', linestyle="--", label=r'$a={0}\pm{3}$ $\mu={1}\pm{4}$ $\sigma={2}\pm{5}$'.format(*popt, *err))
         plt.xlabel(plot.x_achse)
         plt.ylabel(plot.y_achse)
         plt.title(plot.titel)
+        plt.legend(loc='lower center')
         plt.savefig(plot.datei)
         plt.show()
-        plt.close()
 
     return ergebnis
